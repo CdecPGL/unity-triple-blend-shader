@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace CdecPGL.TripleBlendShader {
 	/// <summary>
-	/// 自分及びこのうちでTripleBlendStandardShaderが設定されたマテリアルを持つレンダラーにSelectionMapテクスチャを設定するためのクラス。
+	/// A class to set SelectionMap texture to renderers which or whose children have material using TripleBlendStandardShader.
 	/// </summary>
 	public sealed class TripleBlendStandardShaderSelectionMapSetter : MonoBehaviour {
 		/// <summary>
-		/// シーン内のすべての可能なTripleBlendStandardShaderSelectionMapSetterがアタッチされたオブジェクトにSelectionMapテクスチャを設定する
+		/// Set SelectionMap texture to all objects which has TripleBlendStandardShaderSelectionMapSetter component in the scene.
 		/// </summary>
 		public static void SetSelectionMapTextureAndAreaToAll(Texture texture, Rect area) {
 			var targets = FindObjectsOfType<TripleBlendStandardShaderSelectionMapSetter>();
@@ -19,7 +19,7 @@ namespace CdecPGL.TripleBlendShader {
 		}
 
 		/// <summary>
-		/// SelectionMapテクスチャを設定する
+		/// Set SelectionMap texture.
 		/// </summary>
 		/// <param name="texture"></param>
 		public void SetSelectionMapTexture(Texture texture) {
@@ -29,7 +29,7 @@ namespace CdecPGL.TripleBlendShader {
 		}
 
 		/// <summary>
-		/// SelectionAreaを設定する
+		/// Set SelectionArea.
 		/// </summary>
 		/// <param name="area"></param>
 		public void SetSelectionArea(Rect area) {
@@ -55,20 +55,21 @@ namespace CdecPGL.TripleBlendShader {
 		private static readonly int _selectionAreaPropertyId = Shader.PropertyToID("_SelectionArea");
 
 		private void Awake() {
-			// _SelectionMapをプロパティに持っているかどうかで対象を判断する
-			// レンダラーのマテリアルを追加
+			// Add materials which have _SelectionMap property from Renderer Component.
+			// Target components is searched from this game object and all child game objects.
 			_mySelectionMapRendererMaterialList = GetComponentsInChildren<Renderer>().Append(GetComponent<Renderer>())
 				.Where(r => r).Select(r => r.materials).SelectMany(m => m)
 				.Where(m => m.HasProperty(_selectionMapPropertyId)).ToList();
 
-			//　Terrainのマテリアルを追加
+			// Add materials which have _SelectionMap property from Terrain Component.
+			// Target components is searched from this game object and all child game objects.			
 			_mySelectionMapRendererMaterialList.AddRange(GetComponentsInChildren<Terrain>()
 				.Append(GetComponent<Terrain>())
 				.Where(t => t && t.materialTemplate.HasProperty(_selectionMapPropertyId))
 				.Select(t => t.materialTemplate).ToList());
 
 #if UNITY_EDITOR
-			//Unity2018.3.7f1においてエディター上で実行したときになぜか実行終了時にシェーダーテクスチャの設定が復元ざれないので手動で復元する
+			// Revert material settings manually because material settings are not reverted in Unity2018.3.7f1 when play in editor.
 			foreach (var myMaterial in _mySelectionMapRendererMaterialList) {
 				if (!_materialPropertyBackup.ContainsKey(myMaterial)) {
 					_materialPropertyBackup.Add(myMaterial,
