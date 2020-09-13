@@ -10,7 +10,7 @@ By using these sources, the shader blends three textutures according to world sp
 
 ## Test Environment
 
-- Unity2019.2.12f1
+- Unity2019.3.15f1
 - Windows10
 
 ## Usage
